@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // console.log('DOM cargado, inicializando...');
     initializeCountdown();
     initializeCarousel();
-    initializeHeroParallax();
     setupModalButtons();
 
     // Mostrar el modal de bienvenida para elegir con/sin música
@@ -419,48 +418,10 @@ function showToast(title, message) {
     }, 4000);
 }
 
-// Efecto parallax en la portada (capa separada movida con transform en vez
-// de background-position, ya que background-attachment: fixed no funciona
-// en iOS/Android). translate3d es más fluido y no reflowea el layout.
-function initializeHeroParallax() {
-    const heroLayer = document.querySelector('.hero-section .hero-bg-layer');
-    if (!heroLayer) return;
+// Nota: el efecto de portada ahora se logra 100% con CSS (hero fijo detrás
+// del contenido, ver .hero-section y .content en CCSB.css), igual que en
+// boda100L. Ya no hace falta mover nada por JS en el scroll.
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-    let lastScrollY = window.scrollY || window.pageYOffset;
-    let ticking = false;
-
-    const computeSpeed = () => (window.innerWidth <= 768 ? 0.65 : 0.5);
-
-    const render = () => {
-        if (prefersReducedMotion.matches) {
-            heroLayer.style.transform = 'translate3d(0,0,0)';
-        } else {
-            const speed = computeSpeed();
-            // Tope: nunca desplazar más que el colchón real de la capa (60px fijos,
-            // igual al valor definido en CSS), para que no se despegue del contenedor
-            // y deje un hueco vacío, sin necesidad de sobredimensionar la imagen.
-            const BUFFER_PX = 60;
-            let translateY = lastScrollY * speed;
-            translateY = Math.max(0, Math.min(BUFFER_PX, translateY));
-            heroLayer.style.transform = `translate3d(0, ${Math.round(translateY)}px, 0)`;
-        }
-        ticking = false;
-    };
-
-    const onScroll = () => {
-        lastScrollY = window.scrollY || window.pageYOffset;
-        if (!ticking) {
-            window.requestAnimationFrame(render);
-            ticking = true;
-        }
-    };
-
-    render();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', render);
-}
 
 // Forzar limpieza de caches en clientes antiguos
 (function() {

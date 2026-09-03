@@ -216,53 +216,24 @@ html { background-color: #8B5E3C; }
     box-shadow: var(--shadow-gold);
 }
 
-/* Hero Section */
+/* Hero Section: fondo fijo detrás de todo el contenido, que se va
+   "revelando" a medida que el resto de la página se desliza encima al
+   hacer scroll. Es el mismo efecto de portada que usa boda100L. */
 .hero-section {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 1100px; /* igual que .main-center */
-    margin: 0 auto;    /* centrar como el resto */
-    min-height: 100vh;
-    overflow: hidden; /* contiene la capa de fondo que se mueve con el scroll */
-    background-color: #111; /* fallback paint mientras carga la imagen */
+    height: 100vh;
+    height: 100svh; /* soporta barras de navegador móviles */
+    background-image: url('https://i.ibb.co/4wBH7S3R/0ea4ea193a4f-dosmasenlamesa-2-z.jpg');
+    background-size: cover;
+    background-position: center 25%;
+    background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
-}
-
-/* Capa de fondo independiente: se desplaza con transform (translate3d) al
-   hacer scroll, dando el efecto parallax de la portada sin mover el texto
-   ni el overlay que van encima. */
-.hero-bg-layer {
-    position: absolute;
-    inset: 0;
-    top: -60px; /* colchón fijo y pequeño: evita el hueco sin forzar zoom extra en la imagen */
-    left: 0;
-    width: 100%;
-    height: calc(100% + 60px);
-    background-image: url('https://i.ibb.co/4wBH7S3R/0ea4ea193a4f-dosmasenlamesa-2-z.jpg');
-    background-size: 70% auto; /* ajuste solicitado */
-    background-position: center 25%;
-    background-repeat: no-repeat;
-    transform: translateY(0);
-    will-change: transform;
-    z-index: 0;
-}
-
-@media (max-width: 1024px) {
-    .hero-section {
-        min-height: 100dvh; /* llenar pantalla en móvil */
-        /* full-bleed y sin bordes laterales en móvil */
-        width: 100vw !important;
-        max-width: 100vw !important;
-        margin-left: calc(50% - 50vw) !important;
-        margin-right: calc(50% - 50vw) !important;
-    }
-    .hero-bg-layer {
-        background-size: cover !important; /* que no se vean bordes */
-        background-position: center center !important;
-    }
+    z-index: -1;
 }
 
 .hero-overlay {
@@ -317,6 +288,8 @@ html { background-color: #8B5E3C; }
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
+    margin-top: 100vh;   /* deja ver el hero fijo hasta que el usuario hace scroll */
+    margin-top: 100svh;  /* mejor soporte de barras de navegador en móvil */
     box-sizing: border-box;
 }
 
@@ -326,6 +299,8 @@ html { background-color: #8B5E3C; }
         width: 100vw;
         max-width: 100vw;
         margin: 0;
+        margin-top: 100vh;
+        margin-top: 100svh;
         padding: 0;
     }
 }
@@ -623,6 +598,48 @@ html { background-color: #8B5E3C; }
     margin-top: 1rem !important;
     display: block !important;
     order: 3 !important;
+}
+
+/* Mismo ajuste para el ícono de WhatsApp y el botón de "Confirmar Asistencia":
+   sin esto, otra regla más arriba (.whatsapp-icon dentro de "Modern & Elegant
+   Icons") le quitaba el círculo dorado con !important y quedaba descolocado
+   respecto al resto de íconos del sitio (evento, regalo, etc.). */
+.rsvp-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.rsvp-container .section-title {
+    order: 1 !important;
+    margin-bottom: 1rem !important;
+}
+
+.rsvp-container .section-subtitle {
+    order: 1 !important;
+    margin-bottom: 2rem !important;
+}
+
+.rsvp-container .whatsapp-icon {
+    order: 2 !important;
+    width: 5rem !important;
+    height: 5rem !important;
+    padding: 1rem !important;
+    margin: 0 auto 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    background-color: hsl(var(--gold) / 0.1) !important;
+    border: 2px solid hsl(var(--gold)) !important;
+    box-shadow: var(--shadow-elegant) !important;
+}
+
+.rsvp-container .btn-wedding {
+    order: 3 !important;
+    margin-top: 0.5rem !important;
+    display: inline-flex !important;
 }
 
 .event-icon svg,
