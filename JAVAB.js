@@ -1,6 +1,7 @@
 // Variables globales
 let isPlaying = false;
 let player = null;
+let playerReady = false;
 let currentSlide = 0;
 let totalSlides = 0;
 let enableMusic = false;
@@ -13,11 +14,20 @@ function enterWithMusicClick() {
     if (modal) {
         modal.style.display = 'none';
     }
-    if (window.YT && window.YT.Player) {
-        initializeYouTubePlayer();
-    } else {
-        loadYouTubeAPI();
+
+    // El player se precarga desde DOMContentLoaded (ver loadYouTubeAPI más abajo),
+    // así que si ya está listo llamamos playVideo() de inmediato, dentro del mismo
+    // tick del click. Eso es justo lo que iOS Safari exige para permitir el audio;
+    // si el player se crea o se reproduce de forma asíncrona (fuera del gesto del
+    // usuario), iOS lo bloquea en silencio y por eso antes no sonaba en iPhone.
+    if (playerReady && player) {
+        document.getElementById('musicPlayer').style.display = 'block';
+        player.playVideo();
+        isPlaying = true;
+        updateMusicIcon();
     }
+    // Si el player todavía no está listo (conexión lenta), onPlayerReady se
+    // encarga de reproducir apenas termine de inicializar.
 }
 
 function enterWithoutMusicClick() {
@@ -44,10 +54,14 @@ function setupModalButtons() {
             if (modal) {
                 modal.style.display = 'none';
             }
-            if (window.YT && window.YT.Player) {
-                initializeYouTubePlayer();
-            } else {
-                loadYouTubeAPI();
+            // Mismo arreglo que en enterWithMusicClick: reproducir de forma
+            // síncrona dentro del click si el player ya está precargado.
+            if (playerReady && player) {
+                const musicPlayer = document.getElementById('musicPlayer');
+                if (musicPlayer) musicPlayer.style.display = 'block';
+                player.playVideo();
+                isPlaying = true;
+                updateMusicIcon();
             }
         };
     }
@@ -68,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // console.log('DOM cargado, inicializando...');
     initializeCountdown();
     initializeCarousel();
+    initializeHeroParallax();
     setupModalButtons();
 
     // Mostrar el modal de bienvenida para elegir con/sin música
@@ -75,6 +90,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modal) {
         modal.style.display = 'flex';
     }
+
+    // Se precarga el player de YouTube desde el inicio (no en el click) para
+    // que playVideo() pueda ejecutarse de forma síncrona dentro del gesto del
+    // usuario en enterWithMusicClick(). Esto es lo que exige iOS Safari.
+    loadYouTubeAPI();
 });
 
 // También configurar cuando la página esté completamente cargada
@@ -95,7 +115,7 @@ function loadYouTubeAPI() {
 
 // Función llamada por la API de YouTube
 function initializeYouTubePlayer() {
-    if (!enableMusic) return;
+    if (player) return; // ya inicializado, evita crear el player dos veces
 
     player = new YT.Player('youtube-player', {
         height: '1',
@@ -123,14 +143,19 @@ function initializeYouTubePlayer() {
 }
 
 function onPlayerReady(event) {
+    playerReady = true;
     const musicPlayer = document.getElementById('musicPlayer');
     const musicToggle = document.getElementById('musicToggle');
-    
-    musicPlayer.style.display = 'block';
-    musicToggle.addEventListener('click', toggleMusic);
-    
-    // Reproducir si está habilitada la música
-    if (enableMusic) {
+
+    if (musicToggle) {
+        musicToggle.addEventListener('click', toggleMusic);
+    }
+
+    // Caso borde: el usuario ya hizo click en "con música" antes de que el
+    // player terminara de inicializar (ej. conexión lenta). Lo reproducimos
+    // apenas esté listo.
+    if (enableMusic && !isPlaying) {
+        if (musicPlayer) musicPlayer.style.display = 'block';
         event.target.playVideo();
         isPlaying = true;
         updateMusicIcon();
@@ -190,7 +215,7 @@ function updateMusicIcon() {
 
 // Countdown
 function initializeCountdown() {
-    const targetDate = new Date('2025-12-31T22:00:00').getTime();
+    const targetDate = new Date('2026-12-31T10:00:00').getTime();
     
     function updateCountdown() {
         const now = new Date().getTime();
@@ -342,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Funciones de los botones
 function openLocation(location) {
     const addresses = {
-        ceremony: "Parroquia Nuestra Señora de Lujan, Av. Pergamino 203, Santo Domingo",
+        ceremony: "Parroquia Nuestra Señora de Luján, Av. Pergamino 203, Santo Domingo",
         celebration: "Salón de fiestas Avril, Av. Los Reartes 12, Santo Domingo"
     };
     
@@ -372,7 +397,7 @@ function showGifts() {
 }
 
 function confirmAttendance() {
-    const message = "¡Hola! Quiero confirmar mi asistencia a la boda de Rafael y Juana el 15 de Agosto 💒✨";
+    const message = "¡Hola! Quiero confirmar mi asistencia a la boda de Rafael y Juana el 31 de Diciembre 💒✨";
     const whatsappUrl = `https://wa.me/1234567890?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }
@@ -394,50 +419,48 @@ function showToast(title, message) {
     }, 4000);
 }
 
-// Parallax en móviles (iOS y Android no soportan background-attachment: fixed)
-(function() {
-  let ticking = false;
+// Efecto parallax en la portada (capa separada movida con transform en vez
+// de background-position, ya que background-attachment: fixed no funciona
+// en iOS/Android). translate3d es más fluido y no reflowea el layout.
+function initializeHeroParallax() {
+    const heroLayer = document.querySelector('.hero-section .hero-bg-layer');
+    if (!heroLayer) return;
 
-  function getHero() {
-    return document.querySelector(".hero-section");
-  }
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  function applyParallax() {
-    const hero = getHero();
-    if (!hero) return;
-    // Solo aplicar en pantallas <= 1024px
-    if (window.innerWidth <= 1024) {
-      const offset = window.scrollY * 0.5; // velocidad del efecto
-      hero.style.backgroundPosition = `center ${offset}px`;
-    } else {
-      // Desktop: mantener fondo fijo y bajar un poco la imagen
-      hero.style.backgroundPosition = "center 25%";
-    }
-  }
+    let lastScrollY = window.scrollY || window.pageYOffset;
+    let ticking = false;
 
-  function onScroll() {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(() => {
-        applyParallax();
+    const computeSpeed = () => (window.innerWidth <= 768 ? 0.65 : 0.5);
+
+    const render = () => {
+        if (prefersReducedMotion.matches) {
+            heroLayer.style.transform = 'translate3d(0,0,0)';
+        } else {
+            const speed = computeSpeed();
+            // Tope: nunca desplazar más que el colchón real de la capa (60px fijos,
+            // igual al valor definido en CSS), para que no se despegue del contenedor
+            // y deje un hueco vacío, sin necesidad de sobredimensionar la imagen.
+            const BUFFER_PX = 60;
+            let translateY = lastScrollY * speed;
+            translateY = Math.max(0, Math.min(BUFFER_PX, translateY));
+            heroLayer.style.transform = `translate3d(0, ${Math.round(translateY)}px, 0)`;
+        }
         ticking = false;
-      });
-    }
-  }
+    };
 
-  function init() {
-    applyParallax();
-    document.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", applyParallax);
-    window.addEventListener("orientationchange", applyParallax);
-  }
+    const onScroll = () => {
+        lastScrollY = window.scrollY || window.pageYOffset;
+        if (!ticking) {
+            window.requestAnimationFrame(render);
+            ticking = true;
+        }
+    };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
+    render();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', render);
+}
 
 // Forzar limpieza de caches en clientes antiguos
 (function() {
