@@ -1,66 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-    // Unconditional one-time HTML bust to force fresh index fetch
-    (function(){
-      try {
-        if (!/[?&]__html_bust=/.test(location.search)) {
-          var u = new URL(location.href);
-          u.searchParams.set('__html_bust', Date.now().toString());
-          location.replace(u.toString());
-        }
-      } catch(e) {}
-    })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-    <meta name="x-build" content="force-14">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <script>
-    // Unregister SW and hard-reload with a unique param to bypass stale caches
-    (function(){
-      try {
-        var hasBypass = /[?&]__bypass=/.test(location.search);
-        if (!hasBypass && 'serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs){
-            if (regs && regs.length) {
-              regs.forEach(function(r){ r.unregister(); });
-              var u = new URL(location.href);
-              u.searchParams.set('__bypass', Date.now().toString());
-              location.replace(u.toString());
-            }
-          }).catch(function(){});
-        }
-      } catch(e) {}
-    })();
-    </script>
-    <script>
-    (function() {
-        try {
-            var ts = Date.now().toString();
-            var links = Array.prototype.slice.call(document.querySelectorAll('link[rel="stylesheet"][href]'));
-            links.forEach(function(link){
-                var href = link.getAttribute('href');
-                if (!href) return;
-                href = href.replace(/([?&])v=[^&]*/,'').split('#')[0];
-                link.setAttribute('href', href + (href.indexOf('?')>-1?'&':'?') + 't=' + ts);
-            });
-            var scripts = Array.prototype.slice.call(document.querySelectorAll('script[src]'));
-            scripts.forEach(function(scr){
-                var src = scr.getAttribute('src');
-                if (!src) return;
-                src = src.replace(/([?&])v=[^&]*/,'').split('#')[0];
-                scr.setAttribute('src', src + (src.indexOf('?')>-1?'&':'?') + 't=' + ts);
-            });
-        } catch(e) {}
-    })();
-    </script>
     <title>Rafael y Juana - Invitación de Boda</title>
-    <link rel="preload" as="image" href="boda-imagen.jpg">
-    <link rel="stylesheet" href="CCSB.css?v=21">
+    <link rel="preload" as="image" href="https://i.ibb.co/GQD51nRv/boda-imagen.jpg">
+    <link rel="stylesheet" href="CCSB.css">
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <style>
         /* Carrusel: 3 imágenes simultáneamente con foto central destacada */
@@ -187,7 +132,7 @@
         /* Ajuste temporal: mantener altura visible sin tocar el attachment */
         @media (min-width: 1025px) {
             .hero-section {
-                background-image: url('boda-imagen.jpg') !important;
+                background-image: url('https://i.ibb.co/GQD51nRv/boda-imagen.jpg') !important;
             }
         }
 
@@ -221,7 +166,7 @@
 
         <!-- Hero Section -->
         <div class="hero-section">
-            <img class="hero-bg" src="boda-imagen.jpg" alt="Portada boda Rafael y Juana">
+            <img class="hero-bg" src="https://i.ibb.co/GQD51nRv/boda-imagen.jpg" alt="Portada boda Rafael y Juana">
             <div class="hero-overlay"></div>
             <div class="hero-content">
                 <div class="hero-text">
